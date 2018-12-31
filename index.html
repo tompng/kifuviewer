@@ -1,0 +1,160 @@
+<meta http-equiv='content-type' content='charset=utf-8'>
+<meta name='description' content='将棋の棋譜をブラウザで観賞できるWebアプリ「棋譜嫁」'>
+<meta name='viewport' content='width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no'>
+<title>棋譜嫁</title>
+<script src="sound.js" type="text/javascript" charset="utf-8"></script>
+<script src="shogi.js" type="text/javascript" charset="utf-8"></script>
+<script src="kifu.js" type="text/javascript" charset="utf-8"></script>
+<script src="kifuview.js" type="text/javascript" charset="utf-8"></script>
+<script>window.onload=function(){init()}</script>
+<style>
+div.number0,div.number1,div.number2,div.number3,div.number4,div.number5,div.number6,div.number7,div.number8,div.number9{
+	position:relative;overflow:hidden;
+	display:inline-block;height:26px;
+}
+div.number_{display:none;}
+div.number0{width:18px}
+div.number0 img{position:absolute;left:0px;top:0px;}
+div.number1{width:12px}
+div.number1 img{position:absolute;left:0px;top:-26px;}
+div.number2{width:16px}
+div.number2 img{position:absolute;left:0px;top:-52px;}
+div.number3{width:16px}
+div.number3 img{position:absolute;left:0px;top:-78px;}
+div.number4{width:18px}
+div.number4 img{position:absolute;left:0px;top:-104px;}
+div.number5{width:16px}
+div.number5 img{position:absolute;left:0px;top:-130px;}
+div.number6{width:17px}
+div.number6 img{position:absolute;left:0px;top:-156px;}
+div.number7{width:18px}
+div.number7 img{position:absolute;left:0px;top:-182px;}
+div.number8{width:18px}
+div.number8 img{position:absolute;left:0px;top:-208px;}
+div.number9{width:17px}
+div.number9 img{position:absolute;left:0px;top:-234px;}
+textarea{font-family:Meiryo,Osaka,Sans-Serif;}
+#header{
+	position:absolute;top:0px;font-size:24px;
+	width:100%;height:36px;line-height:36px;
+	background:black;
+	background-image:url(img/header_bg.png);
+	overflow:hidden;z-index:200;
+}
+#title{
+	user-select:text;
+	-moz-user-select:text;
+	-webkit-user-select:text;
+}
+.btn{
+	user-select:none;
+	-moz-user-select:none;
+	-webkit-user-select:none;
+	color:#777;
+	text-decoration:none;
+	display:inline-block;
+	padding:0px;
+	height:36px;line-height:36px;
+	position:absolute;
+	width:60px;
+	cursor:pointer;
+	font-size:18px;
+	text-align:center;
+	background-color:none;
+	background:url(img/btn_bg.png);
+	background-size:0px 0px;
+	background-repeat:no-repeat;
+}
+.btn:hover{color:white;background-size:auto;}
+#btn1:hover{color:white;background-size:auto;}
+#btn2:hover{color:white;background-size:auto;}
+#btn3:hover{color:white;background-size:auto;}
+
+div.kifuitemSelected{
+	background:url(img/kifuselect.png);
+}
+
+#soundbtn{cursor:pointer;position:absolute;right:0px;top:0px;width:60px;height:36px;background:url(img/sound_bg.png);}
+#soundbtnimg{position:absolute;left:10px;top:0px;opacity:0.5;filter:alpha(opacity=50);}
+#soundbtnimg:hover{opacity:1;filter:alpha(opacity=100);}
+
+#migi_kifumain div{
+	line-height:24px;
+	height:24px;
+	cursor:pointer;
+}
+#migi_kifumain div:hover{color:#008;}
+
+body{
+	margin:0px;margin-top:46px;overflow:hidden;
+	font-family:Meiryo,Osaka,Sans-Serif;
+}
+#player1mode,#player2mode{
+	position:absolute;left:0px;top:0px;width:100%;height:24px;line-height:24px;font-size:16px;font-weight:bold;
+}
+#player1name,#player2name{
+	position:absolute;left:0px;top:24px;width:100%;height:20px;line-height:20px;font-size:12px;
+	overflow:hidden;
+}
+span.hiddentext{
+	position:absolute;left:0px;top:0px;width:1px;height:1px;overflow:hidden;opacity:0;filter:alpha(opacity=0);
+}
+#player1bg,#player2bg{
+	position:absolute;left:0px;top:0px;width:100%;height:100%;
+	background:url(img/playerbg.png);
+	background-color:expression('white');
+	-webkit-transition:opacity 0.1s linear;
+	-moz-transition:opacity 0.1s linear;
+	-o-transition:opacity 0.1s linear;
+	transition:opacity 0.1s linear;
+}
+</style>
+<div id="header">
+<center class="btn" id="btn1" style="position:absolute;left:0px;top:0px;" onclick="showLoadKifu();">load</center>
+<center class="btn" id="btn2" style="position:absolute;left:60px;top:0px;" onclick="shogi.setFlip(!shogi.flip);">flip</center>
+<center class="btn" id="btn3" style="position:absolute;left:120px;top:0px;" onclick="showHelp();">help</center>
+<nobr id="title" style="margin:0 200px;text-align:center;display:block;color:white;"><span class="hiddentext">棋戦：</span><span></span></nobr>
+<span onclick="soundOnOff();" id="soundbtn"><img src="img/sound.png" id="soundbtnimg"></span>
+</div>
+<center style="position:absolute;left:0px;top:46px;width:100%;background:white;" id="centermain">
+	<div style="position:relative;text-align:left;min-width:600px;max-width:725px;overflow:hidden;width:expression('725px');">
+		<div style="position:absolute;width:449px;height:554px;left:5px;top:0px;" id="shogi">
+			<div><span class="hiddentext" id="teaiwari"></span><br></div>
+			<div id="shogi_bg" style="position:absolute;left:20px;top:50px;width:409px;height:454px;">
+				<img style="position:absolute;left:0px;top:0px;width:409px;height:454px;" id="img_banbg" src="img/ban_bg.jpg">
+				<img style="position:absolute;left:0px;top:0px;width:409px;height:454px;" id="img_ban" src="img/ban.png">
+			</div>
+			<div style="position:absolute;left:0px;top:0px;width:449px;height:554px;" id="currentmovelayer"></div>
+			<div style="position:absolute;left:0px;top:0px;width:449px;height:554px;" id="shogiban"></div>
+			<div style="position:absolute;left:0px;top:0px;width:449px;height:554px;" id="selectlayer"></div>
+			<div style="position:absolute;left:0px;top:0px;width:449px;height:554px;" id="shogilayer"></div>
+			<div style="position:absolute;right:0px;bottom:2px;width:80px;height:44px;" id="player1">
+				<div id="player1bg"></div>
+				<div style="position:absolute;text-align:center;width:100%;top:0px;height:100%;">
+					<span id="player1mode"></span>
+					<span class="hiddentext">：</span>
+					<nobr id="player1name"></nobr><br>
+				</div>
+			</div>
+			<div style="position:absolute;left:0px;top:2px;width:80px;height:44px;" id="player2">
+				<div style="position:absolute;text-align:center;width:100%;top:0px;height:100%;">
+					<div id="player2bg"></div>
+					<span id="player2mode"></span>
+					<span class="hiddentext">：</span>
+					<nobr id="player2name"></nobr><br>
+				</div>
+			</div>
+		</div>
+		<div id="migi" style="position:relative;margin-left:460px;margin-right:5px;left:0px;min-width:150px;max-width:275px;height:554px;">
+			<div style="width:100%;height:554px;overflow:hidden;overflow:scroll;overflow-x:hidden;background:url(img/kifubg.png);" id="migi_kifu">
+				<div style="background:url(img/kifubg.png);font-size:18px;" id="migi_kifumain"></div>
+			</div>
+		</div>
+	</div>
+</center>
+<div id="smartPhoneControl" style="position:absolute;left:0px;top:0px;width:100%;height:100%;z-index:100;display:none;opacity:0;" ontouchstart="touchfunc(event,true);return false;" ontouchmove="touchfunc(event,true);return false;" ontouchend="touchfunc(event,false);return false;" onmousemove="touchfunc(event,window.mouseflag);return false;" onmouseup="touchfunc(event,mouseflag=false);return false;" onmousedown="touchfunc(event,mouseflag=true);return false;"></div>
+
+<div id="floating" style="position:absolute;left:0px;top:0px;width:100%;height:100%;display:none;z-index:200;">
+<div id="floatingBackground" style="position:absolute;left:0px;top:0px;width:100%;height:100%;background:black;opacity:0;filter:alpha(opacity=0);" onclick="hideFloatingLayer()"></div>
+<div id="floatingLayer" style="opacity:0;filter:alpha(opacity=0);"></div>
+</div>
